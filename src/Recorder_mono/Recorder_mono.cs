@@ -34,7 +34,7 @@ namespace NOBlackBox
         private bool processUnits = false;
         private bool processBulletSims = false;
         private bool processShockWaves = false;
-        
+
         public void invokeWriterUpdate(ACMIObject_mono obj)
         {
             writer.UpdateObject(obj, curTime);
@@ -93,7 +93,7 @@ namespace NOBlackBox
                     bool isNew = false;
                     if (!unitObjects.TryGetValue(unit.persistentID.Id, out GameObject acmi))
                     {
-                        
+
                         switch (unit)
                         {
                             case Aircraft aircraft:
@@ -197,27 +197,12 @@ namespace NOBlackBox
             }
             if (processBulletSims)
             {
-                foreach (var bulletSim in bulletSims)
-                {
-                    List<BulletSim.Bullet> bullets = (List<BulletSim.Bullet>)Recorder_mono.bullets.GetValue(bulletSim);
-
-                    foreach (var bullet in bullets)
-                    {
-
-                        if (!tracers.ContainsKey(bullet))
-                        {
-                            GameObject tracer = new GameObject();
-                            tracer.AddComponent<ACMITracer_mono>();
-                            tracer.GetComponent<ACMITracer_mono>().Init(bulletSim, bullet);
-                            tracer.GetComponent<ACMITracer_mono>().enabled = true;
-                            tracers.Add(tracer.GetComponent<ACMITracer_mono>().bullet, tracer);
-                        }
-                    }
-                }
                 processBulletSims = false;
             }
+            if (GetComponent<ACMIGunBurst_mono>() == null)
+                gameObject.AddComponent<ACMIGunBurst_mono>();
 
-            if(processShockWaves)
+            if (processShockWaves)
             {
                 foreach (Shockwave wave in shockwaves)
                 {
