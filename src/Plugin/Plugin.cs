@@ -124,7 +124,10 @@ namespace NOBlackBox
 
 
 
-            if (!isRecording && MissionManager.IsRunning && !recordingManually)
+            if (!isRecording
+                && Configuration.AutoStartRecording.Value
+                && MissionManager.IsRunning
+                && !recordingManually)
             {
                 StartRecording();
             }
