@@ -18,6 +18,7 @@ namespace NOBlackBox
         FieldInfo? _muzzleVel;
         FieldInfo? _spread;
         FieldInfo? _info;
+        FieldInfo? _lastFired;
 
         void Awake()
         {
@@ -28,6 +29,7 @@ namespace NOBlackBox
             _muzzleVel = typeof(Gun).GetField("muzzleVelocity", flags);
             _spread = typeof(Gun).GetField("bulletSpread", flags);
             _info = typeof(Weapon).GetField("info", flags);
+            _lastFired = typeof(Gun).GetField("lastFired", flags);
         }
 
         void Update()
@@ -47,7 +49,11 @@ namespace NOBlackBox
                 if (gun == null || gun.attachedUnit == null) continue;
                 int id = gun.GetInstanceID();
                 seen.Add(id);
-                bool firing = _ticks?.GetValue(gun) is int ticks && ticks < 3;
+                bool firing = false;
+                if (_lastFired?.GetValue(gun) is float fired)
+                    firing = Time.timeSinceLevelLoad - fired < 0.18f;
+                else
+                    firing = gun.isActiveAndEnabled && _ticks?.GetValue(gun) is int ticks && ticks > 0 && ticks < 3;
                 if (!_open.TryGetValue(id, out var burst))
                 {
                     if (!firing) continue;
@@ -123,6 +129,11 @@ namespace NOBlackBox
             Transform? muzzle = muzzles != null && muzzles.Length > 0 ? muzzles[0] : gun.transform;
             if (muzzle == null) return;
             Vector3 p = muzzle.position;
+            try
+            {
+                p = new Vector3(muzzle.position.GlobalX(), muzzle.position.GlobalY(), muzzle.position.GlobalZ());
+            }
+            catch { }
             Vector3 f = muzzle.forward;
             if (f.sqrMagnitude < 0.01f) f = gun.transform.forward;
             float yaw = Mathf.Atan2(f.x, f.z) * Mathf.Rad2Deg;
