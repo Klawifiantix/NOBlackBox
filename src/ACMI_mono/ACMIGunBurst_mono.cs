@@ -115,7 +115,8 @@ namespace NOBlackBox
                 { "Muzzle", muzzle.ToString("0.##", CultureInfo.InvariantCulture) },
                 { "Drag", drag.ToString("0.####", CultureInfo.InvariantCulture) },
                 { "Grav", grav.ToString("0.##", CultureInfo.InvariantCulture) },
-                { "Spread", spread.ToString("0.###", CultureInfo.InvariantCulture) }
+                { "Spread", spread.ToString("0.###", CultureInfo.InvariantCulture) },
+                { "Weapon", GunPath(unit.transform, gun.transform) }
             };
             recorder.invokeWriterUpdate(burst.Host);
             burst.Host.props = new Dictionary<string, string>();
@@ -162,6 +163,19 @@ namespace NOBlackBox
             recorder.invokeWriterUpdate(burst.Host);
             recorder.invokeWriterRemove(burst.Host);
             UnityEngine.Object.Destroy(burst.Host);
+        }
+
+        static string GunPath(Transform unit, Transform gun)
+        {
+            var parts = new List<string>();
+            var t = gun;
+            while (t != null && t != unit)
+            {
+                parts.Add(t.name);
+                t = t.parent;
+            }
+            parts.Reverse();
+            return string.Join("/", parts);
         }
 
         static float Field(object? obj, string name)
