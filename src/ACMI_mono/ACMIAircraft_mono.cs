@@ -73,6 +73,8 @@ namespace NOBlackBox
                 ApplyPilotProps(force: true);
             }
 
+            ApplyLoadoutAndLivery();
+
             Plugin.recorderMono.GetComponent<Recorder_mono>().invokeWriterUpdate(this);
             props = [];
             this.enabled = true;
@@ -235,6 +237,46 @@ namespace NOBlackBox
                     lastThrust = avgThrust;
                 }
             }
+        }
+
+        void ApplyLoadoutAndLivery()
+        {
+            try
+            {
+                var loadout = aircraft.loadout;
+                if (loadout?.weapons != null && loadout.weapons.Count > 0)
+                {
+                    var parts = new List<string>();
+                    for (int i = 0; i < loadout.weapons.Count; i++)
+                    {
+                        var mount = loadout.weapons[i];
+                        if (mount == null) continue;
+                        string key = mount.jsonKey;
+                        if (string.IsNullOrEmpty(key)) key = mount.mountName;
+                        if (string.IsNullOrEmpty(key)) key = mount.name;
+                        if (string.IsNullOrEmpty(key)) continue;
+                        key = key.Replace(",", " ").Replace("|", " ").Replace("=", " ");
+                        parts.Add(i + ":" + key + ":" + mount.ammo);
+                    }
+                    if (parts.Count > 0)
+                        props["Loadout"] = string.Join("|", parts);
+                }
+            }
+            catch { }
+
+            try
+            {
+                var key = aircraft.NetworkLiveryKey;
+                string value = key.Type.ToString();
+                if (key.Type == LiveryKey.KeyType.Builtin)
+                    value += ":" + key.Index;
+                else if (key.Type == LiveryKey.KeyType.AppData && !string.IsNullOrEmpty(key.AppDataName))
+                    value += ":" + key.AppDataName.Replace(",", " ").Replace("|", " ").Replace("=", " ");
+                else if (key.Type == LiveryKey.KeyType.Workshop)
+                    value += ":" + key.Id;
+                props["Livery"] = value;
+            }
+            catch { }
         }
 
         private void ApplyPilotProps(bool force)
